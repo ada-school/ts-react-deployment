@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - release
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "starting tests 🧪 triggered by a ${{ github.event_name }} in ${{ github.ref }}."
+
+      - name: Clonning repo 🐑
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+
+      - name: Cache Node.js modules 💾
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+
+      - name: Install dependencies 📦
+        run: yarn install --frozen-lockfile
+
+      - name: Run Unit tests 🏎
+        run: yarn test
+
+      - run: echo "Ran unit tests, status is ${{ job.status }}. ✅"
